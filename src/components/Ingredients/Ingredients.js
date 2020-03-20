@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 
 import IngredientForm from './IngredientForm';
 import Search from './Search';
@@ -6,7 +6,7 @@ import IngredientList from './IngredientList';
 
 function Ingredients() {
   const [ingredients, setIngredients] = useState([]);
-  
+
   const addIngredientHandler = ingredient => {
     fetch('https://react-hooks-tutorial-de828.firebaseio.com/ingredients.json', {
       method: 'POST',
