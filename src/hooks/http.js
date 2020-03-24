@@ -1,5 +1,13 @@
 import { useReducer, useCallback } from 'react';
 
+const initialState = {
+    isLoading: false,
+    error: null,
+    data: null,
+    extras: null,
+    actionId: null
+};
+
 const httpReducer = (currentHttpState, action) => {
     switch (action.type) {
         case 'SEND':
@@ -8,15 +16,16 @@ const httpReducer = (currentHttpState, action) => {
             return { ...currentHttpState, isLoading: false, data: action.responseData, extras: action.extras };
         case 'ERROR':
             return { ...currentHttpState, isLoading: false, error: action.error };
-        case 'CLEAR_ERROR':
-            return { ...currentHttpState, error: null };
+        case 'CLEAR':
+            return initialState;
         default:
             throw Error(`${action.type} not dealt. Please check your action type or add it!`);
     }
 };
 
 const useHttp = () => {
-    const [httpState, httpDispatch] = useReducer(httpReducer, { isLoading: false, error: null, data: null, extras: null, actionId: null });
+    const [httpState, httpDispatch] = useReducer(httpReducer, initialState);
+    const clear = useCallback(() => httpDispatch({type: 'CLEAR'}), []);
     const sendRequest = useCallback((url, method, body, extras, actionId) => {
         httpDispatch({ type: 'SEND', actionId: actionId });
         fetch(url, {
@@ -37,7 +46,8 @@ const useHttp = () => {
         error: httpState.error,
         data: httpState.data,
         sendRequest: sendRequest,
-        extras: httpState.extras
+        extras: httpState.extras,
+        clear: clear
     };
 };
 
