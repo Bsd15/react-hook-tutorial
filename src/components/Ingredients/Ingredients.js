@@ -21,7 +21,7 @@ const ingredientsReducer = (currentIngredients, action) => {
 function Ingredients() {
   const [ingredients, ingredientsDispatch] = useReducer(ingredientsReducer, []);
 
-  const { actionId, isLoading, error, data, sendRequest, extras } = useHttp();
+  const { actionId, clear ,isLoading, error, data, sendRequest, extras } = useHttp();
 
   useEffect(() => {
     if (!isLoading && !error && actionId === 'ADD_INGREDIENT') {
@@ -37,11 +37,6 @@ function Ingredients() {
       ingredientsDispatch({ type: 'DELETE', ingredientID: extras });
     }
   }, [data, extras, actionId, isLoading, error]);
-
-
-  const clearError = () => {
-    // httpDispatch({ type: 'CLEAR_ERROR' });
-  }
 
   const addIngredientHandler = useCallback(ingredient => {
     sendRequest(
@@ -84,7 +79,7 @@ function Ingredients() {
         <Search onLoadFilteredIngredients={onLoadFilteredIngredients} />
         {ingredientsList}
       </section>
-      {error && <ErrorModal onClose={clearError}>{error}</ErrorModal>}
+      {error && <ErrorModal onClose={clear}>{error}</ErrorModal>}
     </div>
   );
 }
