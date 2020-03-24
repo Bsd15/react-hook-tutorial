@@ -3,9 +3,9 @@ import { useReducer, useCallback } from 'react';
 const httpReducer = (currentHttpState, action) => {
     switch (action.type) {
         case 'SEND':
-            return { isLoading: true, error: null, data: null };
+            return { isLoading: true, error: null, data: null, extras: null, actionId: action.actionId };
         case 'RECIEVED':
-            return { ...currentHttpState, isLoading: false, data: action.responseData };
+            return { ...currentHttpState, isLoading: false, data: action.responseData, extras: action.extras };
         case 'ERROR':
             return { ...currentHttpState, isLoading: false, error: action.error };
         case 'CLEAR_ERROR':
@@ -16,9 +16,9 @@ const httpReducer = (currentHttpState, action) => {
 };
 
 const useHttp = () => {
-    const [httpState, httpDispatch] = useReducer(httpReducer, { isLoading: false, error: null, data: null });
-    const sendRequest = useCallback((url, method, body) => {
-        httpDispatch({ type: 'SEND' });
+    const [httpState, httpDispatch] = useReducer(httpReducer, { isLoading: false, error: null, data: null, extras: null, actionId: null });
+    const sendRequest = useCallback((url, method, body, extras, actionId) => {
+        httpDispatch({ type: 'SEND', actionId: actionId });
         fetch(url, {
             method: method,
             body: JSON.stringify(body),
@@ -26,16 +26,18 @@ const useHttp = () => {
         }).then(response => {
             return response.json();
         }).then(responseData => {
-            httpDispatch({ type: 'RECIEVED', responseData: responseData });
+            httpDispatch({ type: 'RECIEVED', responseData: responseData, extras: extras });
         }).catch(error => {
             httpDispatch({ type: 'ERROR', error: 'SOMETHING WENT WRONG!!!' });
         });
     }, []);
     return {
+        actionId: httpState.actionId,
         isLoading: httpState.isLoading,
         error: httpState.error,
-        data: httpState.responseData,
-        sendRequest: sendRequest
+        data: httpState.data,
+        sendRequest: sendRequest,
+        extras: httpState.extras
     };
 };
 
