@@ -1,4 +1,4 @@
-import React, { useCallback, useReducer, useMemo } from 'react';
+import React, { useCallback, useEffect, useReducer, useMemo } from 'react';
 import useHttp from '../../hooks/http';
 import IngredientForm from './IngredientForm';
 import Search from './Search';
@@ -21,7 +21,22 @@ const ingredientsReducer = (currentIngredients, action) => {
 function Ingredients() {
   const [ingredients, ingredientsDispatch] = useReducer(ingredientsReducer, []);
 
-  const { isLoading, error, data, sendRequest } = useHttp();
+  const { actionId, isLoading, error, data, sendRequest, extras } = useHttp();
+
+  useEffect(() => {
+    if (!isLoading && !error && actionId === 'ADD_INGREDIENT') {
+      ingredientsDispatch({
+        type: 'ADD',
+        newIngredient: {
+          id: data.name,
+          title: extras.title,
+          amount: extras.amount
+        }
+      });
+    } else if (!isLoading && !error && actionId === 'DELETE_INGREDIENT') {
+      ingredientsDispatch({ type: 'DELETE', ingredientID: extras });
+    }
+  }, [data, extras, actionId, isLoading, error]);
 
 
   const clearError = () => {
@@ -29,39 +44,22 @@ function Ingredients() {
   }
 
   const addIngredientHandler = useCallback(ingredient => {
-    // httpDispatch({ type: 'SEND' });
-    // fetch('https://react-hooks-tutorial-de828.firebaseio.com/ingredients.json', {
-    //   method: 'POST',
-    //   body: JSON.stringify(ingredient),
-    //   headers: { 'Content-Type': 'application/json' }
-    // }).then(response => response.json())
-    //   .then(responseData => {
-    //     ingredientsDispatch({
-    //       type: 'ADD', newIngredient: {
-    //         id: responseData.name,
-    //         title: ingredient.title,
-    //         amount: ingredient.amount
-    //       }
-    //     });
-    //     httpDispatch({ type: 'RECIEVED' });
-    //   })
-    //   .catch(error => {
-    //     httpDispatch({ type: 'ERROR', error: 'SOMETHING WENT WRONG!!!' });
-    //   });
-  }, []);
+    sendRequest(
+      'https://react-hooks-tutorial-de828.firebaseio.com/ingredients.json',
+      'POST',
+      ingredient,
+      ingredient,
+      'ADD_INGREDIENT'
+    );
+  }, [sendRequest]);
 
   const removeIngredientHandler = useCallback(id => {
-    // httpDispatch({ type: 'SEND' });
-    // fetch(`https://react-hooks-tutorial-de828.firebaseio.com/ingredients/${id}.json`, {
-    //   method: 'DELETE'
-    // }).then(_ => {
-    //   ingredientsDispatch({ type: 'DELETE', ingredientID: id });
-    //   httpDispatch({ type: 'RECIEVED' });
-    // })
-    //   .catch(error => {
-    //     httpDispatch({ type: 'ERROR', error: 'SOMETHING WENT WRONG!!!' });
-    //   });
-    sendRequest(`https://react-hooks-tutorial-de828.firebaseio.com/ingredients/${id}.json`, 'DELETE');
+    sendRequest(
+      `https://react-hooks-tutorial-de828.firebaseio.com/ingredients/${id}.json`,
+      'DELETE',
+      null,
+      id,
+      'DELETE_INGREDIENT');
   }, [sendRequest]);
 
   const onLoadFilteredIngredients = useCallback(
